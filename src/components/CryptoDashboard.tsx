@@ -72,7 +72,8 @@ const CryptoDashboard: React.FC = () => {
     ) {
       fetchMoreData();
     }
-  }, [fetchMoreData, containerRef.current]);
+  }, [fetchMoreData]);
+  
   
   useEffect(() => {
     const currentRef = containerRef.current;
