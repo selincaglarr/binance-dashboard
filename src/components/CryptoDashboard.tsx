@@ -81,7 +81,8 @@ const CryptoDashboard: React.FC = () => {
         containerRef.current.removeEventListener("scroll", handleScroll);
       }
     };
-  }, []);
+  }, [handleScroll, containerRef.current]);
+  
 
   return (
     <div className="container mx-auto" ref={containerRef} style={{ height: "100vh", overflowY: "auto" }}>
