@@ -1,13 +1,3 @@
-# netlify.toml
-
 [build]
-  command = "npm run build"  # Projenin nasıl inşa edileceğini belirtin
-  publish = "build/"         # İnşa edilen dosyaların hangi dizinde olduğunu belirtin
-
-[[plugins]]  # Opsiyonel: Netlify eklentilerini burada tanımlayabilirsiniz
-  package = "@netlify/plugin-nextjs"  # Özel Netlify eklentileri ekleyebilirsiniz
-
-[[redirects]]  # Opsiyonel: Yönlendirmeleri burada tanımlayabilirsiniz
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  command = "npm run build"
+  publish = "build/"
