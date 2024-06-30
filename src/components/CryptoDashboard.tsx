@@ -73,16 +73,16 @@ const CryptoDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.addEventListener("scroll", handleScroll);
+    const currentRef = containerRef.current;
+    if (currentRef) {
+      currentRef.addEventListener("scroll", handleScroll);
     }
     return () => {
-      if (containerRef.current) {
-        containerRef.current.removeEventListener("scroll", handleScroll);
+      if (currentRef) {
+        currentRef.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [handleScroll, containerRef.current]);
-  
+  }, [handleScroll]);  
 
   return (
     <div className="container mx-auto" ref={containerRef} style={{ height: "100vh", overflowY: "auto" }}>
