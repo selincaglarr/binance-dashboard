@@ -1,46 +1,66 @@
-# Getting Started with Create React App
+# Binance Dashboard
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Project Overview
+The Binance Dashboard is a React application that fetches cryptocurrency data from the Binance API and displays it in a dynamic dashboard format. It includes real-time updates using WebSocket, data visualization with Recharts, and utilizes Tailwind CSS for styling.
 
-## Available Scripts
+## Features
+- **Real-time Data Updates:** Utilizes WebSocket to provide live updates on cryptocurrency prices.
+- **Interactive Charts:** Displays historical price data using Recharts.
+- **Pagination:** Loads data incrementally with infinite scroll functionality.
+- **Responsive Design:** Tailwind CSS ensures a responsive and modern UI.
+- **Error Handling:** Manages errors gracefully when fetching data.
 
-In the project directory, you can run:
+## Technologies Used
+- **React**: Frontend framework for building user interfaces.
+- **WebSocket**: Provides real-time communication between the client and server.
+- **Recharts**: Data visualization library for creating charts.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Axios**: HTTP client for making API requests.
+- **React Query**: Handles data fetching, caching, and synchronization.
 
-### `npm start`
+## Installation
+1. **Clone Repository:**
+   ```bash
+   git clone <repository-url>
+   cd binance-dashboard
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+2. **Set Up Environment Variables:**
+- Create a .env file in the root directory. Define the following environment variables:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+    ```bash
+    REACT_APP_COINGECKO_API_URL=https://api.coingecko.com/api/v3
+    REACT_APP_API_KEY=<your-api-key>
+    REACT_APP_CURRENCY=usd
 
-### `npm test`
+- Get your API key from CoinGecko API Documentation.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+3. **Run the Application:**
+    ```bash
+    npm start
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Open http://localhost:3000 to view it in the browser.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Project Structure
+  ```bash
+binance-dashboard/
+├── public/
+│   └── index.html
+├── src/
+   ├── components/
+   │   ├── CryptoDashboard.tsx
+   │   ├── CryptoChart.tsx
+   │   └── ...
+   ├── contexts/
+   │   └── WebSocketContext.tsx
+   ├── services/
+   │   └── api.ts
+   ├── utils/
+   │   ├── formatters.ts
+   │   └── icon.ts
+   ├── App.tsx
+   ├── index.tsx
+   └── ...
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).

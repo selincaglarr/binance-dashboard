@@ -1,12 +1,10 @@
-// components/CryptoDashboard.tsx
-
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "react-query";
 import { fetchCryptoData, Crypto, fetchStaticCryptoData } from "../services/api";
 import CryptoChart from "./CryptoChart";
-import { formatNumber } from "../utils/formatters";
-import { LuArrowUpRight, LuArrowDownRight } from "react-icons/lu";
+import { formatNumber} from "../utils/formatters";
 import { useWebSocket } from "../contexts/WebSocketContext";
+import { renderChangeIcon } from "../utils/icon";
 
 const CryptoDashboard: React.FC = () => {
   const { socketData } = useWebSocket();
@@ -89,16 +87,6 @@ const CryptoDashboard: React.FC = () => {
       }
     };
   }, []);
-
-  const renderChangeIcon = (change: number) => {
-    if (change > 0) {
-      return <LuArrowUpRight className="text-green-500" />;
-    } else if (change < 0) {
-      return <LuArrowDownRight className="text-red-500" />;
-    } else {
-      return null;
-    }
-  };
 
   return (
     <div className="container mx-auto" ref={containerRef} style={{ height: "100vh", overflowY: "auto" }}>
