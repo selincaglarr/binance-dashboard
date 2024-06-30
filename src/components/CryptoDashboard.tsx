@@ -1,60 +1,92 @@
-import React, { useState, useEffect } from "react";
-import { fetchCryptoData } from "../services/api";
+// components/CryptoDashboard.tsx
+
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery } from "react-query";
+import { fetchCryptoData, Crypto, fetchStaticCryptoData } from "../services/api";
 import CryptoChart from "./CryptoChart";
 import { formatNumber } from "../utils/formatters";
 import { LuArrowUpRight, LuArrowDownRight } from "react-icons/lu";
-
-export interface Crypto {
-  id: string;
-  name: string;
-  symbol: string;
-  image: string;
-  current_price: number;
-  market_cap: number;
-  price_change_24h: number;
-}
+import { useWebSocket } from "../contexts/WebSocketContext";
 
 const CryptoDashboard: React.FC = () => {
-  const [cryptoData, setCryptoData] = useState<Crypto[]>([]);
-  const [socketData, setSocketData] = useState<Crypto | null>(null);
-  const [flashUpdate, setFlashUpdate] = useState<boolean>(false);
+  const { socketData } = useWebSocket();
+  const [cryptoData, setCryptoData] = useState<Crypto[]>([]); // State to hold crypto data
+  const [staticDataLoaded, setStaticDataLoaded] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const perPage = 30;
+  const currentPageRef = useRef<number>(1);
+  const [loadingError, setLoadingError] = useState<boolean>(false);
+
+  const {
+    data: initialCryptoData = [],
+    isLoading,
+    refetch,
+  } = useQuery<Crypto[]>(
+    ["cryptoData", perPage],
+    () => fetchCryptoData(currentPageRef.current, perPage),
+    {
+      refetchInterval: 60000, // 60 seconds
+      keepPreviousData: true,
+      cacheTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 2 * 60 * 1000, // 2 minutes,
+      onError: () => {
+        setLoadingError(true);
+      }
+    }
+  );
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await fetchCryptoData();
-        setCryptoData(data);
-        setFlashUpdate(true);
-        setTimeout(() => setFlashUpdate(false), 1000);
-      } catch (error) {
-        console.error("Error fetching crypto data:", error);
-      }
-    };
+    // Fetch and cache static crypto data on component mount
+    if (!staticDataLoaded) {
+      fetchStaticCryptoData().then(() => setStaticDataLoaded(true));
+    }
+  }, [staticDataLoaded]);
 
-    const socket = new WebSocket(process.env.REACT_APP_BINANCE_SOCKET_URL!);
+  useEffect(() => {
+    // Update cryptoData with initial data fetched from useQuery
+    setCryptoData(initialCryptoData);
+  }, [initialCryptoData]);
 
-    socket.onopen = () => {
-      console.log("Connected to WebSocket");
-    };
+  // Effect to update cryptoData when socketData changes
+  useEffect(() => {
+    if (socketData && socketData.length > 0) {
+      const updatedCryptoData = cryptoData.map((crypto) =>
+        crypto.id === socketData[0].s ? { ...crypto, ...socketData[0] } : crypto
+      );
+      setCryptoData(updatedCryptoData);
+    }
+  }, [socketData, cryptoData]); // Add cryptoData as dependency here
 
-    socket.onclose = () => {
-      console.log("Disconnected from WebSocket");
-    };
+  // Function to load more data on scroll
+  const handleScroll = () => {
+    if (
+      containerRef.current &&
+      containerRef.current.scrollTop + containerRef.current.clientHeight >=
+        containerRef.current.scrollHeight
+    ) {
+      fetchMoreData();
+    }
+  };
 
-    socket.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-      setSocketData(newData);
-      setFlashUpdate(true);
-      setTimeout(() => setFlashUpdate(false), 1000);
-    };
+  const fetchMoreData = async () => {
+    currentPageRef.current++;
+    try {
+      const newData = await fetchCryptoData(currentPageRef.current, perPage);
+      setCryptoData((prevData) => [...prevData, ...newData]);
+      setLoadingError(false); // Reset error state on successful fetch
+    } catch (error) {
+      setLoadingError(true);
+    }
+  };
 
-    fetchData();
-
-    const interval = setInterval(fetchData, 60000);
-
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.addEventListener("scroll", handleScroll);
+    }
     return () => {
-      clearInterval(interval);
-      socket.close();
+      if (containerRef.current) {
+        containerRef.current.removeEventListener("scroll", handleScroll);
+      }
     };
   }, []);
 
@@ -68,18 +100,8 @@ const CryptoDashboard: React.FC = () => {
     }
   };
 
-  const highlightPriceChange = (change: number) => {
-    if (change > 0) {
-      return "bg-green-100";
-    } else if (change < 0) {
-      return "bg-red-100";
-    } else {
-      return "";
-    }
-  };
-
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto" ref={containerRef} style={{ height: "100vh", overflowY: "auto" }}>
       <h1 className="text-3xl font-semibold text-center my-8">
         Crypto Dashboard
       </h1>
@@ -96,7 +118,7 @@ const CryptoDashboard: React.FC = () => {
           </thead>
           <tbody className="text-gray-600 text-sm font-light">
             {cryptoData.map((crypto) => (
-              <tr key={crypto.id} className={flashUpdate ? "bg-yellow-100" : ""}>
+              <tr key={crypto.id}>
                 <td className="py-3 px-6 text-left">
                   <div className="flex items-center">
                     <img
@@ -119,10 +141,23 @@ const CryptoDashboard: React.FC = () => {
                 <td className="py-3 px-6 text-left font-semibold">
                   ${formatNumber(crypto.market_cap)}
                 </td>
-                <td className={`py-3 px-6 text-left flex items-center font-semibold ${highlightPriceChange(crypto.price_change_24h)}`}>
+                <td
+                  className={`py-3 px-6 text-left flex items-center font-semibold`}
+                >
                   {renderChangeIcon(crypto.price_change_24h)}
-                  {crypto.price_change_24h.toFixed(2)}%
+                  <span
+                    className={`ml-1 ${
+                      crypto.price_change_24h > 0
+                        ? "text-green-500"
+                        : crypto.price_change_24h < 0
+                        ? "text-red-500"
+                        : ""
+                    }`}
+                  >
+                    {crypto.price_change_24h.toFixed(2)}%
+                  </span>
                 </td>
+
                 <td className="py-3 px-6 text-left">
                   <CryptoChart id={crypto.id} />
                 </td>
@@ -130,6 +165,16 @@ const CryptoDashboard: React.FC = () => {
             ))}
           </tbody>
         </table>
+        {isLoading && (
+          <div className="flex justify-center items-center h-32">
+            <p className="text-gray-500 text-lg">Loading...</p>
+          </div>
+        )}
+        {loadingError && (
+          <div className="flex justify-center items-center h-32">
+            <p className="text-red-500 text-lg">Error fetching data. Please try again later.</p>
+          </div>
+        )}
       </div>
     </div>
   );

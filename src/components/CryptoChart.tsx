@@ -59,7 +59,7 @@ const CryptoChart: React.FC<CryptoChartProps> = ({ id }) => {
 
   return (
     <div className={`mt-4 ${flashing ? 'flash' : ''}`}>
-      <LineChart width={70} height={25} data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
+      <LineChart width={120} height={25} data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
         <Line
           type="monotone"
           dataKey="price"
