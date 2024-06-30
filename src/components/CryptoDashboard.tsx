@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "react-query";
 import { fetchCryptoData, Crypto, fetchStaticCryptoData } from "../services/api";
 import CryptoChart from "./CryptoChart";
@@ -51,15 +51,7 @@ const CryptoDashboard: React.FC = () => {
     }
   }, [socketData, cryptoData]);
 
-  const handleScroll = () => {
-    if (
-      containerRef.current &&
-      containerRef.current.scrollTop + containerRef.current.clientHeight >=
-        containerRef.current.scrollHeight
-    ) {
-      fetchMoreData();
-    }
-  };
+ 
 
   const fetchMoreData = async () => {
     currentPageRef.current++;
@@ -72,6 +64,16 @@ const CryptoDashboard: React.FC = () => {
     }
   };
 
+  const handleScroll = useCallback(() => {
+    if (
+      containerRef.current &&
+      containerRef.current.scrollTop + containerRef.current.clientHeight >=
+        containerRef.current.scrollHeight
+    ) {
+      fetchMoreData();
+    }
+  }, [fetchMoreData, containerRef.current]);
+  
   useEffect(() => {
     const currentRef = containerRef.current;
     if (currentRef) {
@@ -82,7 +84,8 @@ const CryptoDashboard: React.FC = () => {
         currentRef.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [handleScroll]);  
+  }, [handleScroll]);
+   
 
   return (
     <div className="container mx-auto" ref={containerRef} style={{ height: "100vh", overflowY: "auto" }}>
