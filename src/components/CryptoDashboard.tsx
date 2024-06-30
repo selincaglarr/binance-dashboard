@@ -53,7 +53,7 @@ const CryptoDashboard: React.FC = () => {
 
  
 
-  const fetchMoreData = async () => {
+  const fetchMoreData = useCallback(async () => {
     currentPageRef.current++;
     try {
       const newData = await fetchCryptoData(currentPageRef.current, perPage);
@@ -62,7 +62,8 @@ const CryptoDashboard: React.FC = () => {
     } catch (error) {
       setLoadingError(true);
     }
-  };
+  }, [perPage]);
+  
 
   const handleScroll = useCallback(() => {
     if (
