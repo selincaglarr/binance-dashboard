@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "react-query";
 import { fetchCryptoData, Crypto, fetchStaticCryptoData } from "../services/api";
 import CryptoChart from "./CryptoChart";
-import { formatNumber} from "../utils/formatters";
+import { formatNumber } from "../utils/formatters";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import { renderChangeIcon } from "../utils/icon";
 
 const CryptoDashboard: React.FC = () => {
   const { socketData } = useWebSocket();
-  const [cryptoData, setCryptoData] = useState<Crypto[]>([]); // State to hold crypto data
+  const [cryptoData, setCryptoData] = useState<Crypto[]>([]);
   const [staticDataLoaded, setStaticDataLoaded] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const perPage = 30;
@@ -18,15 +18,14 @@ const CryptoDashboard: React.FC = () => {
   const {
     data: initialCryptoData = [],
     isLoading,
-    refetch,
   } = useQuery<Crypto[]>(
     ["cryptoData", perPage],
     () => fetchCryptoData(currentPageRef.current, perPage),
     {
-      refetchInterval: 60000, // 60 seconds
+      refetchInterval: 60000,
       keepPreviousData: true,
-      cacheTime: 5 * 60 * 1000, // 5 minutes
-      staleTime: 2 * 60 * 1000, // 2 minutes,
+      cacheTime: 5 * 60 * 1000,
+      staleTime: 2 * 60 * 1000,
       onError: () => {
         setLoadingError(true);
       }
@@ -34,18 +33,15 @@ const CryptoDashboard: React.FC = () => {
   );
 
   useEffect(() => {
-    // Fetch and cache static crypto data on component mount
     if (!staticDataLoaded) {
       fetchStaticCryptoData().then(() => setStaticDataLoaded(true));
     }
   }, [staticDataLoaded]);
 
   useEffect(() => {
-    // Update cryptoData with initial data fetched from useQuery
     setCryptoData(initialCryptoData);
   }, [initialCryptoData]);
 
-  // Effect to update cryptoData when socketData changes
   useEffect(() => {
     if (socketData && socketData.length > 0) {
       const updatedCryptoData = cryptoData.map((crypto) =>
@@ -53,9 +49,8 @@ const CryptoDashboard: React.FC = () => {
       );
       setCryptoData(updatedCryptoData);
     }
-  }, [socketData, cryptoData]); // Add cryptoData as dependency here
+  }, [socketData, cryptoData]);
 
-  // Function to load more data on scroll
   const handleScroll = () => {
     if (
       containerRef.current &&
@@ -71,7 +66,7 @@ const CryptoDashboard: React.FC = () => {
     try {
       const newData = await fetchCryptoData(currentPageRef.current, perPage);
       setCryptoData((prevData) => [...prevData, ...newData]);
-      setLoadingError(false); // Reset error state on successful fetch
+      setLoadingError(false);
     } catch (error) {
       setLoadingError(true);
     }
@@ -145,7 +140,6 @@ const CryptoDashboard: React.FC = () => {
                     {crypto.price_change_24h.toFixed(2)}%
                   </span>
                 </td>
-
                 <td className="py-3 px-6 text-left">
                   <CryptoChart id={crypto.id} />
                 </td>
